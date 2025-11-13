@@ -9,7 +9,13 @@
 osThreadId_t tid_ThJoy;                        // thread id
  
 void ThJoy (void *argument);                   // thread function
-
+   GPIO_InitTypeDef joy_derecha = {
+    .Pin = GPIO_PIN_11,
+    .Mode = GPIO_MODE_IT_RISING,
+    .Pull = GPIO_PULLDOWN,
+    .Speed = GPIO_SPEED_FREQ_HIGH
+  };
+	
 typedef struct {
     GPIO_InitTypeDef pin;
     GPIO_TypeDef *port;
@@ -17,9 +23,9 @@ typedef struct {
     uint8_t counter;
 } mygpio_pin;
 
+mygpio_pin pinB11;
 
-
-int Init_Thread (void) {
+int Init_ThJoy (void) {
  
   tid_ThJoy = osThreadNew(ThJoy, NULL, NULL);
   if (tid_ThJoy == NULL) {
@@ -30,9 +36,27 @@ int Init_Thread (void) {
 }
  
 void ThJoy (void *argument) {
- 
+	
+	 __HAL_RCC_GPIOB_CLK_ENABLE();
+	  pinB11.pin = joy_derecha;
+    pinB11.port = GPIOB;
+	  HAL_GPIO_Init(GPIOB,&joy_derecha);
+
+	  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+	
   while (1) {
     ; // Insert thread code here...
+		
+		
+		
    // osThreadYield();                            // suspend thread
   }
 }
+
+
+
+
+
+
+
+

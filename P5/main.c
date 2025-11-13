@@ -39,6 +39,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "ThLeds.h"
+#include "ThJoy.h"
 
 #ifdef _RTE_
 #include "RTE_Components.h"             // Component selection
@@ -119,7 +121,9 @@ int main(void)
 
   /* Create thread functions that start executing, 
   Example: osThreadNew(app_main, NULL, NULL); */
+Init_Thleds();
 
+Init_ThJoy();
   /* Start thread execution */
   osKernelStart();
 #endif

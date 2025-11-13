@@ -8,9 +8,33 @@
 osThreadId_t tid_Thleds;                        // thread id
  
 void Thleds (void *argument);                   // thread function
+
+void Timer1_Callback(void *argument);
 int Init_Thleds (void);
 
+//...definimos aqui la configuracion de los pines de los leds:
+	GPIO_InitTypeDef led1 = {
+    .Pin = GPIO_PIN_0,
+    .Mode = GPIO_MODE_OUTPUT_PP,
+    .Pull = GPIO_NOPULL,
+    .Speed = GPIO_SPEED_FREQ_LOW
+  };
+ 
+//GPIO_InitTypeDef led2 = {
+//    .Pin = GPIO_PIN_7,
+//    .Mode = GPIO_MODE_OUTPUT_PP,
+//    .Pull = GPIO_NOPULL,
+//    .Speed = GPIO_SPEED_FREQ_LOW
+//};
 
+  GPIO_InitTypeDef led3 = {
+    .Pin = GPIO_PIN_14,
+    .Mode = GPIO_MODE_OUTPUT_PP,
+    .Pull = GPIO_NOPULL,
+    .Speed = GPIO_SPEED_FREQ_LOW
+  };
+	
+	
 typedef struct {
     GPIO_InitTypeDef pin;
     GPIO_TypeDef *port;
@@ -34,27 +58,7 @@ int Init_Thleds (void) {       //Función de inicialización del hilo
 }
  
 void Thleds (void *argument) { 
-	//...definimos aqui la configuracion de los pines de los leds:
-	GPIO_InitTypeDef led1 = {
-    .Pin = GPIO_PIN_0,
-    .Mode = GPIO_MODE_OUTPUT_PP,
-    .Pull = GPIO_NOPULL,
-    .Speed = GPIO_SPEED_FREQ_LOW
-  };
- 
-//GPIO_InitTypeDef led2 = {
-//    .Pin = GPIO_PIN_7,
-//    .Mode = GPIO_MODE_OUTPUT_PP,
-//    .Pull = GPIO_NOPULL,
-//    .Speed = GPIO_SPEED_FREQ_LOW
-//};
-
-  GPIO_InitTypeDef led3 = {
-    .Pin = GPIO_PIN_14,
-    .Mode = GPIO_MODE_OUTPUT_PP,
-    .Pull = GPIO_NOPULL,
-    .Speed = GPIO_SPEED_FREQ_LOW
-  };
+	
  		__HAL_RCC_GPIOB_CLK_ENABLE();
 	  pinB0.pin = led1;
     pinB0.port = GPIOB;
@@ -84,8 +88,25 @@ void Thleds (void *argument) {
 	//HAL_GPIO_Init(GPIOB,&led2);
 	HAL_GPIO_Init(GPIOB,&led3);
 	
+	osTimerId_t tim1 = osTimerNew(Timer1_Callback, osTimerPeriodic, NULL,NULL);
+	
+	HAL_GPIO_WritePin(GPIOB,led1.Pin,GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOB,led3.Pin,GPIO_PIN_RESET);
+	
+	osTimerStart(tim1,3000);
+	
   while (1) {
     ; // Insert thread code here...
+		osThreadFlagsWait(0x0001,osFlagsWaitAny,osWaitForever);
+		
+		osTimerStop(tim1);
+		osTimerStart(tim1,3000);
     //osThreadYield();                            // suspend thread
   }
+	
+
 }
+	void Timer1_Callback(void *argument){
+		HAL_GPIO_WritePin(GPIOB,led1.Pin,GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB,led3.Pin,GPIO_PIN_SET);
+	}
